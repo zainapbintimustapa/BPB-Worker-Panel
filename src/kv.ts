@@ -1,5 +1,5 @@
 import { fetchWarpAccounts } from '@warp';
-import { getDomain, resolveDNS } from '@utils';
+import { getDomain, parseHostPort, resolveDNS } from '@utils';
 import { base64DecodeUtf8 } from '@common';
 
 export async function getDataset(
@@ -73,6 +73,8 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
             ["proxyIPMode"],
             ["proxyIPs"],
             ["prefixes"],
+            ["upstreamProxy"],
+            ["upstreamParams", "upstreamProxy", extractUpstreamParams],
             ["outProxy"],
             ["outProxyParams", "outProxy", extractProxyParams],
             ["cleanIPs"],
@@ -133,7 +135,9 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
             ["noiseDelayMax"],
             ["amneziaNoiseCount"],
             ["amneziaNoiseSizeMin"],
-            ["amneziaNoiseSizeMax"]
+            ["amneziaNoiseSizeMax"],
+            ["customSubs"],
+            ["customConfigs"]
         ];
 
     const entries = await Promise.all(
@@ -256,6 +260,12 @@ function extractProxyParams(chainProxy: string) {
         default:
             return {};
     }
+}
+
+function extractUpstreamParams(upstreamProxy: string): UpstreamProxy {
+    let upstreamServer, upstreamPort;
+    if (upstreamProxy) ({ host: upstreamServer, port: upstreamPort } = parseHostPort(upstreamProxy, true));
+    return { upstreamServer, upstreamPort };
 }
 
 // async function extractEchConfig(enableECH: boolean): Promise<string> {
